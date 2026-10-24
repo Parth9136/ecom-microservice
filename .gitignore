@@ -1,0 +1,28 @@
+﻿# IntelliJ IDEA
+.idea/
+**/.idea/
+*.iml
+*.iws
+*.ipr
+
+# Maven build output
+target/
+**/target/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Other IDE metadata
+.vscode/
+.classpath
+.project
+.settings/
