@@ -28,6 +28,18 @@ services:
       - postgres
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis_container
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis:/data
+    networks:
+      - postgres
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
 networks:
   postgres:
     driver: bridge
@@ -35,3 +47,4 @@ networks:
 volumes:
   postgres:
   pgadmin:
+  redis:
