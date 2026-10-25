@@ -2,9 +2,11 @@ name: E-Commerce CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -37,6 +39,10 @@ jobs:
           java-version: '21'
           cache: maven
           cache-dependency-path: ${{ matrix.directory }}/pom.xml
+
+      - name: Make Maven wrapper executable
+        working-directory: ${{ matrix.directory }}
+        run: chmod +x mvnw
 
       - name: Build and run tests
         working-directory: ${{ matrix.directory }}
