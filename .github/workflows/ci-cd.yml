@@ -1,0 +1,43 @@
+name: E-Commerce CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.service }} - Build and Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: product
+            directory: product/product
+          - service: user
+            directory: user/user
+          - service: order
+            directory: order/order
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: ${{ matrix.directory }}/pom.xml
+
+      - name: Build and run tests
+        working-directory: ${{ matrix.directory }}
+        run: ./mvnw -B clean verify
