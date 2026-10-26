@@ -34,11 +34,11 @@ public class OrderService {
 //        }
 //        User user =  userOptional.get();
 
-        //calculate total price
-        BigDecimal totalPrice =  cartItems.stream()
-                .map(CartItem::getPrice)
+// Calculate total price, accounting for item quantities
+        BigDecimal totalPrice = cartItems.stream()
+                .map(item -> item.getPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
         //Create order
         Order order = new Order();
         order.setUserId(userId);

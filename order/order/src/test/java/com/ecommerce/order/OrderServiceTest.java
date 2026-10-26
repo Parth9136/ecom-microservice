@@ -89,7 +89,7 @@ class OrderServiceTest {
         assertEquals(10L, response.getId());
         assertEquals(
                 0,
-                new BigDecimal("1500.00")
+                new BigDecimal("3500.00")
                         .compareTo(response.getTotalAmount())
         );
         assertEquals(Orderstatus.CONFIRMED, response.getStatus());
@@ -124,7 +124,7 @@ class OrderServiceTest {
         assertEquals(Orderstatus.CONFIRMED, savedOrder.getStatus());
         assertEquals(
                 0,
-                new BigDecimal("1500.00")
+                new BigDecimal("3500.00")
                         .compareTo(savedOrder.getTotalAmount())
         );
 

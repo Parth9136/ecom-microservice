@@ -92,4 +92,10 @@ public class ProductService {
                 .map(this::mapToProductResponse)
                 .toList();
     }
+
+    public Optional<ProductResponse> getProductById(Long id) {
+        return productRepository.findById(id)
+                .filter(product -> Boolean.TRUE.equals(product.getActive()))
+                .map(this::mapToProductResponse);
+    }
 }

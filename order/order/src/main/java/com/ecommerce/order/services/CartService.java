@@ -1,15 +1,16 @@
+
 package com.ecommerce.order.services;
 
+import com.ecommerce.order.clients.ProductClient;
 import com.ecommerce.order.dto.CartItemRequest;
+import com.ecommerce.order.dto.ProductResponseDTO;
 import com.ecommerce.order.models.CartItem;
 import com.ecommerce.order.repositories.CartItemRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,42 +18,66 @@ import java.util.Optional;
 public class CartService {
 
     private final CartItemRepository cartItemRepository;
+    private final ProductClient productClient;
 
     public boolean addToCart(String userId, CartItemRequest request) {
 
-        CartItem existingCartItem = cartItemRepository.findByUserIdAndProductId(userId, request.getProductId());
-        if(existingCartItem != null){
-            //Update the quantity
-            existingCartItem.setQuantity(existingCartItem.getQuantity() + request.getQuantity());
-//            existingCartItem.setPrice(product.getPrice().multiply(BigDecimal.valueOf(existingCartItem.getQuantity())));
+        // Fetch the latest product details from Product Service
+        Long productId = Long.valueOf(request.getProductId());
 
-            // hard coded
-            existingCartItem.setPrice(BigDecimal.valueOf(1000.00));
+        ProductResponseDTO product = productClient.getProductById(productId);
+
+        if (product == null
+                || product.price() == null
+                || product.price().signum() < 0
+                || !Boolean.TRUE.equals(product.active())) {
+            throw new IllegalArgumentException(
+                    "Product is unavailable or has an invalid price"
+            );
+        }
+
+        if (request.getQuantity() == null || request.getQuantity() <= 0) {
+            throw new IllegalArgumentException(
+                    "Quantity must be greater than zero"
+            );
+        }
+
+        CartItem existingCartItem =
+                cartItemRepository.findByUserIdAndProductId(
+                        userId, request.getProductId()
+                );
+
+        if (existingCartItem != null) {
+            // Increase quantity and refresh the unit price
+            existingCartItem.setQuantity(
+                    existingCartItem.getQuantity() + request.getQuantity()
+            );
+            existingCartItem.setPrice(product.price());
             cartItemRepository.save(existingCartItem);
-        }else{
-            //Create new cart item
+
+        } else {
+            // Create a new cart item
             CartItem cartItem = new CartItem();
             cartItem.setUserId(Long.valueOf(userId));
-            cartItem.setProductId(Long.valueOf(request.getProductId()));
+            cartItem.setProductId(productId);
             cartItem.setQuantity(request.getQuantity());
-//            cartItem.setPrice(product.getPrice().multiply(BigDecimal.valueOf(request.getQuantity())));
+            cartItem.setPrice(product.price());
 
-            // hard coded
-            cartItem.setPrice(BigDecimal.valueOf(1000.00));
             cartItemRepository.save(cartItem);
         }
 
         return true;
-
     }
 
     public boolean deleteItemFromCart(String userId, String productId) {
-        CartItem cartItem = cartItemRepository.findByUserIdAndProductId(userId, productId);
+        CartItem cartItem =
+                cartItemRepository.findByUserIdAndProductId(userId, productId);
 
-        if(cartItem != null){
+        if (cartItem != null) {
             cartItemRepository.delete(cartItem);
             return true;
         }
+
         return false;
     }
 

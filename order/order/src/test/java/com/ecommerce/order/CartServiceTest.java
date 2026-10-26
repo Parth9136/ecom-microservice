@@ -1,9 +1,12 @@
 
 package com.ecommerce.order.services;
 
+import com.ecommerce.order.clients.ProductClient;
 import com.ecommerce.order.dto.CartItemRequest;
+import com.ecommerce.order.dto.ProductResponseDTO;
 import com.ecommerce.order.models.CartItem;
 import com.ecommerce.order.repositories.CartItemRepository;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +28,9 @@ class CartServiceTest {
     @Mock
     private CartItemRepository cartItemRepository;
 
+    @Mock
+    private ProductClient productClient;
+
     @InjectMocks
     private CartService cartService;
 
@@ -41,11 +47,24 @@ class CartServiceTest {
         existingItem.setUserId(1L);
         existingItem.setProductId(101L);
         existingItem.setQuantity(3);
-        existingItem.setPrice(BigDecimal.valueOf(1000.00));
+        existingItem.setPrice(new BigDecimal("1000.00"));
+    }
+
+    private void mockProduct() {
+        when(productClient.getProductById(101L))
+                .thenReturn(new ProductResponseDTO(
+                        101L,
+                        "Power Bank",
+                        new BigDecimal("299.99"),
+                        20,
+                        true
+                ));
     }
 
     @Test
     void addToCart_whenItemDoesNotExist_shouldCreateAndSaveItem() {
+        mockProduct();
+
         when(cartItemRepository.findByUserIdAndProductId("1", "101"))
                 .thenReturn(null);
 
@@ -65,12 +84,14 @@ class CartServiceTest {
         assertEquals(2, savedItem.getQuantity());
         assertEquals(
                 0,
-                BigDecimal.valueOf(1000.00).compareTo(savedItem.getPrice())
+                new BigDecimal("299.99").compareTo(savedItem.getPrice())
         );
     }
 
     @Test
     void addToCart_whenItemAlreadyExists_shouldIncreaseQuantity() {
+        mockProduct();
+
         when(cartItemRepository.findByUserIdAndProductId("1", "101"))
                 .thenReturn(existingItem);
 
@@ -80,8 +101,7 @@ class CartServiceTest {
         assertEquals(5, existingItem.getQuantity());
         assertEquals(
                 0,
-                BigDecimal.valueOf(1000.00)
-                        .compareTo(existingItem.getPrice())
+                new BigDecimal("299.99").compareTo(existingItem.getPrice())
         );
 
         verify(cartItemRepository).save(existingItem);
@@ -92,13 +112,10 @@ class CartServiceTest {
         when(cartItemRepository.findByUserIdAndProductId("1", "101"))
                 .thenReturn(existingItem);
 
-        boolean result =
-                cartService.deleteItemFromCart("1", "101");
+        boolean result = cartService.deleteItemFromCart("1", "101");
 
         assertTrue(result);
-
-        verify(cartItemRepository)
-                .delete(existingItem);
+        verify(cartItemRepository).delete(existingItem);
     }
 
     @Test
@@ -106,13 +123,10 @@ class CartServiceTest {
         when(cartItemRepository.findByUserIdAndProductId("1", "101"))
                 .thenReturn(null);
 
-        boolean result =
-                cartService.deleteItemFromCart("1", "101");
+        boolean result = cartService.deleteItemFromCart("1", "101");
 
         assertFalse(result);
-
-        verify(cartItemRepository, never())
-                .delete(any(CartItem.class));
+        verify(cartItemRepository, never()).delete(any(CartItem.class));
     }
 
     @Test
@@ -126,7 +140,6 @@ class CartServiceTest {
 
         assertEquals(1, result.size());
         assertSame(existingItem, result.get(0));
-
         verify(cartItemRepository).findByUserId("1");
     }
 
