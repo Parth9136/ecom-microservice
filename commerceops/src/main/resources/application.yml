@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: commerceops
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/commerceops?options=-c%20TimeZone%3DUTC
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+server:
+  port: 8084
