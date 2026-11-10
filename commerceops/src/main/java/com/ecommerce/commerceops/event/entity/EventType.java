@@ -1,0 +1,19 @@
+package com.ecommerce.commerceops.event.entity;
+
+public enum EventType {
+
+    ORDER_CREATED,
+    ORDER_CANCELLED,
+
+    PAYMENT_SUCCEEDED,
+    PAYMENT_FAILED,
+
+    INVENTORY_RESERVED,
+    INVENTORY_UNAVAILABLE,
+
+    WAREHOUSE_DISPATCHED,
+
+    SHIPMENT_PICKED_UP,
+    SHIPMENT_DELIVERED,
+    SHIPMENT_DELAYED
+}
